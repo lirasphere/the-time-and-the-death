@@ -1,6 +1,6 @@
 {
-  "name": "日本時間クロック",
-  "short_name": "JST時計",
+  "name": "ただ日本時間を眺めるだけの時計",
+  "short_name": "The Time and The Death",
   "description": "日本時間だけを表示するシンプルなアナログ時計",
   "start_url": "./index.html",
   "scope": "./",
