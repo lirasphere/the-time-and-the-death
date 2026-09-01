@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>日本時間</title>
+<meta name="theme-color" content="#f5f5f8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="日本時間">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    color-scheme: light;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: #f5f5f8;
+    background: radial-gradient(circle at 50% 40%, #ffffff 0%, #eaeaef 70%);
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* iPhoneのノッチ/セーフエリア対応 */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  #clock-wrap {
+    position: relative;
+    width: min(92vw, 92vh);
+    height: min(92vw, 92vh);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .face {
+    fill: #ffffff;
+    stroke: #dcdce2;
+    stroke-width: 1;
+  }
+  .tick-major {
+    stroke: #2b2b36;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
+  .tick-minor {
+    stroke: #b4b4c0;
+    stroke-width: 1;
+    stroke-linecap: round;
+  }
+  .num {
+    fill: #3a3a46;
+    font-family: -apple-system, "Hiragino Sans", sans-serif;
+    font-size: 34px;
+    font-weight: 600;
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+  .hand {
+    stroke-linecap: round;
+    transform-origin: 250px 250px;
+  }
+  .hour-hand {
+    stroke: #26262f;
+    stroke-width: 12;
+  }
+  .minute-hand {
+    stroke: #26262f;
+    stroke-width: 8;
+  }
+  .second-hand {
+    stroke: #ff5a5f;
+    stroke-width: 3;
+  }
+  .center-cap {
+    fill: #ff5a5f;
+    stroke: #ffffff;
+    stroke-width: 2;
+  }
+  #jst-label {
+    position: absolute;
+    bottom: -6%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #9a9aa8;
+    font-family: -apple-system, "Hiragino Sans", sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+  }
+  #digital {
+    position: absolute;
+    top: -8%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #6a6a78;
+    font-family: -apple-system, "Hiragino Sans", sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <div id="clock-wrap">
+    <div id="digital">--:--:--</div>
+    <svg viewBox="0 0 500 500">
+      <circle class="face" cx="250" cy="250" r="240"/>
+      <g id="ticks"></g>
+      <g id="numbers"></g>
+      <line id="hour-hand" class="hand hour-hand" x1="250" y1="250" x2="250" y2="140"/>
+      <line id="minute-hand" class="hand minute-hand" x1="250" y1="250" x2="250" y2="90"/>
+      <line id="second-hand" class="hand second-hand" x1="250" y1="270" x2="250" y2="70"/>
+      <circle class="center-cap" cx="250" cy="250" r="8"/>
+    </svg>
+    <div id="jst-label">JAPAN STANDARD TIME</div>
+  </div>
+
+<script>
+  const ticksG = document.getElementById('ticks');
+  const numsG = document.getElementById('numbers');
+  const cx = 250, cy = 250, r = 240;
+
+  // 目盛り生成（60個、5分ごとに太い目盛り）
+  for (let i = 0; i < 60; i++) {
+    const angle = (i * 6) * Math.PI / 180;
+    const isMajor = i % 5 === 0;
+    const outerR = r - 6;
+    const innerR = isMajor ? r - 26 : r - 16;
+    const x1 = cx + outerR * Math.sin(angle);
+    const y1 = cy - outerR * Math.cos(angle);
+    const x2 = cx + innerR * Math.sin(angle);
+    const y2 = cy - innerR * Math.cos(angle);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('class', isMajor ? 'tick-major' : 'tick-minor');
+    ticksG.appendChild(line);
+  }
+
+  // 数字（1〜12）
+  for (let i = 1; i <= 12; i++) {
+    const angle = (i * 30) * Math.PI / 180;
+    const numR = r - 55;
+    const x = cx + numR * Math.sin(angle);
+    const y = cy - numR * Math.cos(angle);
+    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    text.setAttribute('x', x);
+    text.setAttribute('y', y);
+    text.setAttribute('class', 'num');
+    text.textContent = i;
+    numsG.appendChild(text);
+  }
+
+  const hourHand = document.getElementById('hour-hand');
+  const minuteHand = document.getElementById('minute-hand');
+  const secondHand = document.getElementById('second-hand');
+  const digital = document.getElementById('digital');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function update() {
+    // 日本時間（UTC+9固定）で取得
+    const now = new Date();
+    const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+    const jst = new Date(utcMs + 9 * 60 * 60000);
+
+    const h = jst.getHours();
+    const m = jst.getMinutes();
+    const s = jst.getSeconds();
+    const ms = jst.getMilliseconds();
+
+    const secDeg = (s + ms / 1000) * 6;
+    const minDeg = m * 6 + s * 0.1;
+    const hourDeg = (h % 12) * 30 + m * 0.5;
+
+    hourHand.style.transform = `rotate(${hourDeg}deg)`;
+    minuteHand.style.transform = `rotate(${minDeg}deg)`;
+    secondHand.style.transform = `rotate(${secDeg}deg)`;
+
+    digital.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+    requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+
+  // Service Worker登録（PWA化）
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
